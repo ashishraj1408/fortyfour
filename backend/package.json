@@ -1,0 +1,22 @@
+{
+  "name": "fortyfour-backend",
+  "version": "1.0.0",
+  "description": "Backend API for the CRM-style user management assignment",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-validator": "^7.0.0",
+    "pg": "^8.13.0",
+    "sequelize": "^6.37.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
