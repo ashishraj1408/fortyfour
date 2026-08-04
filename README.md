@@ -1,6 +1,6 @@
 # FortyFour CRM Assignment
 
-A production-style full-stack user management application built with React 19 + Vite on the frontend and Node.js + Express + PostgreSQL + Sequelize on the backend.
+A full-stack user management application built with React 19 + Vite on the frontend and Node.js + Express + PostgreSQL + Sequelize on the backend.
 
 ## Tech Stack
 
