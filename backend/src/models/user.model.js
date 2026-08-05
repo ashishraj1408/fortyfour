@@ -29,25 +29,20 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    street: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    city: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    zipcode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    latitude: {
-      type: DataTypes.DECIMAL(10, 7),
-      allowNull: false,
-    },
-    longitude: {
-      type: DataTypes.DECIMAL(10, 7),
-      allowNull: false,
+    address: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      validate: {
+        isValidAddress(value) {
+          if (!value || typeof value !== 'object') {
+            throw new Error('Address is required');
+          }
+
+          if (!value.street || !value.city || !value.zip || !value.geo || !value.geo.lat || !value.geo.lng) {
+            throw new Error('Address details are required');
+          }
+        },
+      },
     },
   },
   {

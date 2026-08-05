@@ -3,8 +3,24 @@ const { User } = require('../models');
 
 const getAllUsers = async (req, res, next) => {
   try {
-    const users = await userService.getAllUsers();
-    return res.status(200).json({ success: true, data: users });
+    const { page = 1, limit = 10, search = '' } = req.query;
+    const pageNum = Number(page) > 0 ? Number(page) : 1;
+    const lim = Number(limit) > 0 ? Number(limit) : 10;
+
+    const result = await userService.getAllUsers({ page: pageNum, limit: lim, search });
+    const { rows, count } = result;
+    const totalPages = Math.ceil(count / lim);
+
+    return res.status(200).json({
+      success: true,
+      data: rows,
+      meta: {
+        total: count,
+        page: pageNum,
+        limit: lim,
+        totalPages,
+      },
+    });
   } catch (error) {
     return next(error);
   }
