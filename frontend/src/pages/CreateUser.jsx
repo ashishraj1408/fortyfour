@@ -19,7 +19,7 @@ const CreateUser = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
-      <Paper sx={{ p: 4, borderRadius: 4, boxShadow: 3 }}>
+      <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
         <UserForm onSubmit={handleSubmit} submitLabel="Create User" title="Create User" />
       </Paper>
     </Container>

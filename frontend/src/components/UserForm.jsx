@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Button, Grid, Stack, TextField, Typography } from '@mui/material';
@@ -9,38 +9,72 @@ const emptyUserValues = {
   email: '',
   phone: '',
   company: '',
-  street: '',
-  city: '',
-  zipcode: '',
-  latitude: '',
-  longitude: '',
+  address: {
+    street: '',
+    city: '',
+    zip: '',
+    geo: {
+      lat: '',
+      lng: '',
+    },
+  },
 };
 
+const getDefaultValues = (initialValues = {}) => ({
+  ...emptyUserValues,
+  ...initialValues,
+  address: {
+    ...emptyUserValues.address,
+    ...(initialValues.address || {}),
+    geo: {
+      ...emptyUserValues.address.geo,
+      ...(initialValues.address?.geo || {}),
+    },
+  },
+});
+
 const schema = yup.object({
-  name: yup.string().required('Name is required'),
-  email: yup.string().required('Email is required').email('Please provide a valid email'),
-  phone: yup.string().required('Phone is required'),
-  company: yup.string().required('Company is required'),
-  street: yup.string().required('Street is required'),
-  city: yup.string().required('City is required'),
-  zipcode: yup.string().required('Zipcode is required'),
-  latitude: yup.number().typeError('Latitude must be numeric').required('Latitude is required'),
-  longitude: yup.number().typeError('Longitude must be numeric').required('Longitude is required'),
+  name: yup.string().trim().required('Name is required'),
+  email: yup.string().trim().required('Email is required').email('Please provide a valid email'),
+  phone: yup.string().trim().required('Phone is required'),
+  company: yup.string().trim().required('Company is required'),
+  address: yup.object({
+    street: yup.string().trim().required('Street is required'),
+    city: yup.string().trim().required('City is required'),
+    zip: yup.string().trim().required('Zipcode is required'),
+    geo: yup.object({
+      lat: yup
+        .number()
+        .typeError('Latitude must be numeric')
+        .required('Latitude is required')
+        .min(-90, 'Latitude must be numeric between -90 and 90')
+        .max(90, 'Latitude must be numeric between -90 and 90'),
+      lng: yup
+        .number()
+        .typeError('Longitude must be numeric')
+        .required('Longitude is required')
+        .min(-180, 'Longitude must be numeric between -180 and 180')
+        .max(180, 'Longitude must be numeric between -180 and 180'),
+    }),
+  }),
 });
 
 const UserForm = ({ initialValues, onSubmit, submitLabel = 'Save', disabled = false, title = 'User Form' }) => {
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: { ...emptyUserValues, ...(initialValues || {}) },
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    criteriaMode: 'all',
+    defaultValues: getDefaultValues(initialValues),
   });
 
   useEffect(() => {
-    reset({ ...emptyUserValues, ...(initialValues || {}) });
+    reset(getDefaultValues(initialValues));
   }, [initialValues, reset]);
 
   return (
@@ -49,31 +83,105 @@ const UserForm = ({ initialValues, onSubmit, submitLabel = 'Save', disabled = fa
         <Typography variant="h5">{title}</Typography>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField fullWidth label="Name" {...register('name')} error={!!errors.name} helperText={errors.name?.message} />
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} fullWidth label="Name" error={!!errors.name} helperText={errors.name?.message} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField fullWidth label="Email" {...register('email')} error={!!errors.email} helperText={errors.email?.message} />
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} fullWidth label="Email" error={!!errors.email} helperText={errors.email?.message} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField fullWidth label="Phone" {...register('phone')} error={!!errors.phone} helperText={errors.phone?.message} />
+            <Controller
+              name="phone"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} fullWidth label="Phone" error={!!errors.phone} helperText={errors.phone?.message} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField fullWidth label="Company" {...register('company')} error={!!errors.company} helperText={errors.company?.message} />
+            <Controller
+              name="company"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} fullWidth label="Company" error={!!errors.company} helperText={errors.company?.message} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField fullWidth label="Street" {...register('street')} error={!!errors.street} helperText={errors.street?.message} />
+            <Controller
+              name="address.street"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} fullWidth label="Street" error={!!errors.address?.street} helperText={errors.address?.street?.message} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField fullWidth label="City" {...register('city')} error={!!errors.city} helperText={errors.city?.message} />
+            <Controller
+              name="address.city"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} fullWidth label="City" error={!!errors.address?.city} helperText={errors.address?.city?.message} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField fullWidth label="Zipcode" {...register('zipcode')} error={!!errors.zipcode} helperText={errors.zipcode?.message} />
+            <Controller
+              name="address.zip"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} fullWidth label="Zipcode" error={!!errors.address?.zip} helperText={errors.address?.zip?.message} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Latitude" type="number" step="any" {...register('latitude')} error={!!errors.latitude} helperText={errors.latitude?.message} />
+            <Controller
+              name="address.geo.lat"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Latitude"
+                  type="number"
+                  step="any"
+                  value={field.value ?? ''}
+                  onChange={(event) => field.onChange(event.target.value === '' ? undefined : Number(event.target.value))}
+                  error={!!errors.address?.geo?.lat}
+                  helperText={errors.address?.geo?.lat?.message}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 3 }}>
-            <TextField fullWidth label="Longitude" type="number" step="any" {...register('longitude')} error={!!errors.longitude} helperText={errors.longitude?.message} />
+            <Controller
+              name="address.geo.lng"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Longitude"
+                  type="number"
+                  step="any"
+                  value={field.value ?? ''}
+                  onChange={(event) => field.onChange(event.target.value === '' ? undefined : Number(event.target.value))}
+                  error={!!errors.address?.geo?.lng}
+                  helperText={errors.address?.geo?.lng?.message}
+                />
+              )}
+            />
           </Grid>
         </Grid>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="flex-end">

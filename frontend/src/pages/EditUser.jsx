@@ -42,7 +42,7 @@ const EditUser = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
-      <Paper sx={{ p: 4, borderRadius: 4, boxShadow: 3 }}>
+      <Paper sx={{ p: 4}}>
         <UserForm
           initialValues={initialValues}
           onSubmit={handleSubmit}

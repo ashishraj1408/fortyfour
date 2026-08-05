@@ -9,9 +9,9 @@ const UserCard = ({ user }) => {
           <Typography variant="body2" color="text.secondary">{user.email}</Typography>
           <Typography variant="body2">{user.phone}</Typography>
           <Typography variant="body2">{user.company}</Typography>
-          <Chip label={`${user.city}, ${user.zipcode}`} size="small" />
+          <Chip label={`${user.address?.city}, ${user.address?.zip}`} size="small" />
           <Typography variant="caption" color="text.secondary">
-            {user.latitude}, {user.longitude}
+            {user.address?.geo?.lat}, {user.address?.geo?.lng}
           </Typography>
         </Stack>
       </CardContent>

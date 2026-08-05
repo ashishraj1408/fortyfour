@@ -1,8 +1,8 @@
 import api from './axios';
 
 const userApi = {
-  getAllUsers: async () => {
-    const response = await api.get('/users');
+  getAllUsers: async (params = {}) => {
+    const response = await api.get('/users', { params });
     return response.data;
   },
 

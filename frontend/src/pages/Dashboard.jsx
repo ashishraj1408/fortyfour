@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -33,15 +33,31 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
   const [deleteUserId, setDeleteUserId] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
-  const loadUsers = async () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const loadUsers = async (opts = {}) => {
     setLoading(true);
     try {
-      const response = await userApi.getAllUsers();
+      const params = {
+        page: opts.page ?? page,
+        limit: opts.limit ?? limit,
+        search: opts.search ?? search,
+      };
+
+      const response = await userApi.getAllUsers(params);
       setUsers(response.data || []);
+      if (response.meta) {
+        setTotal(response.meta.total || 0);
+        setPage(response.meta.page || params.page);
+        setLimit(response.meta.limit || params.limit);
+      }
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Failed to fetch users');
     } finally {
@@ -49,18 +65,40 @@ const Dashboard = () => {
     }
   };
 
+  // initialize from URL
   useEffect(() => {
-    loadUsers();
+    const sp = Object.fromEntries([...searchParams]);
+    const initialSearch = sp.search || '';
+    const initialPage = Number(sp.page) || 1;
+    const initialLimit = Number(sp.limit) || 10;
+
+    setSearch(initialSearch);
+    setPage(initialPage);
+    setLimit(initialLimit);
+
+    loadUsers({ search: initialSearch, page: initialPage, limit: initialLimit });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filteredUsers = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return users;
+  // We fetch filtered results from backend; keep memo for small UI transformations if needed
+  const filteredUsers = users;
 
-    return users.filter((user) => {
-      return [user.name, user.email, user.company].some((field) => field?.toLowerCase().includes(term));
-    });
-  }, [users, search]);
+  // debounce search input
+  const debouncedSearch = useCallback(
+    (() => {
+      let timeout = null;
+      return (val) => {
+        if (timeout) clearTimeout(timeout);
+        return new Promise((resolve) => {
+          timeout = setTimeout(() => {
+            timeout = null;
+            resolve(val);
+          }, 500);
+        });
+      };
+    })(),
+    []
+  );
 
   const confirmDelete = async () => {
     if (!deleteUserId) return;
@@ -81,21 +119,28 @@ const Dashboard = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 5 }}>
       <Stack spacing={3}>
-        <Card sx={{ borderRadius: 4, boxShadow: 3 }}>
+        <Card >
           <CardContent>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="h4" fontWeight={700}>
+              <Box >
+                <Typography variant="h4" fontWeight={700} className='rounded-sm' >
                   Dashboard
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                {/* <Typography variant="body2" color="text.secondary">
                   Search, view, edit, or remove users from your CRM workspace.
-                </Typography>
+                </Typography> */}
               </Box>
               <TextField
                 placeholder="Search by name, email, company"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={async (e) => {
+                  const val = e.target.value;
+                  setSearch(val);
+                  const debounced = await debouncedSearch(val);
+                  // update URL and reset to page 1
+                  setSearchParams({ ...(debounced ? { search: debounced } : {}), page: '1', limit: String(limit) });
+                  await loadUsers({ search: debounced, page: 1, limit });
+                }}
                 size="small"
                 InputProps={{
                   startAdornment: (
@@ -114,7 +159,7 @@ const Dashboard = () => {
         ) : filteredUsers.length === 0 ? (
           <EmptyState />
         ) : (
-          <TableContainer component={Card} sx={{ borderRadius: 4, boxShadow: 3 }}>
+          <TableContainer component={Card} >
             <Table>
               <TableHead>
                 <TableRow>
@@ -149,6 +194,34 @@ const Dashboard = () => {
                 ))}
               </TableBody>
             </Table>
+            <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="body2">{`Showing ${users.length} of ${total} users`}</Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button
+                  disabled={page <= 1}
+                  onClick={async () => {
+                    const newPage = Math.max(1, page - 1);
+                    setPage(newPage);
+                    setSearchParams({ ...(search ? { search } : {}), page: String(newPage), limit: String(limit) });
+                    await loadUsers({ page: newPage, limit, search });
+                  }}
+                >
+                  Previous
+                </Button>
+                <Typography>{`Page ${page} of ${Math.max(1, Math.ceil(total / limit))}`}</Typography>
+                <Button
+                  disabled={page >= Math.ceil(total / limit)}
+                  onClick={async () => {
+                    const newPage = page + 1;
+                    setPage(newPage);
+                    setSearchParams({ ...(search ? { search } : {}), page: String(newPage), limit: String(limit) });
+                    await loadUsers({ page: newPage, limit, search });
+                  }}
+                >
+                  Next
+                </Button>
+              </Stack>
+            </Box>
           </TableContainer>
         )}
       </Stack>

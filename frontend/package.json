@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^3.0.0",
     "@mui/icons-material": "^7.0.0",
     "@mui/material": "^7.0.0",
+    
     "axios": "^1.7.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -25,10 +26,14 @@
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.0.0",
     "eslint": "^9.0.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.0",
     "globals": "^16.0.0",
+    "postcss": "^8.0.0",
+    "tailwindcss": "^4.3.3",
+    "@tailwindcss/postcss": "^4.3.3",
     "vite": "^6.0.0"
   }
 }

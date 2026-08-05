@@ -32,7 +32,7 @@ const UserDetails = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 5 }}>
-      <Card sx={{ borderRadius: 4, boxShadow: 3 }}>
+      <Card >
         <CardContent>
           <Stack spacing={3}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems="center">
@@ -59,11 +59,11 @@ const UserDetails = () => {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="subtitle2" color="text.secondary">Address</Typography>
-                <Typography variant="body1">{user.street}, {user.city}, {user.zipcode}</Typography>
+                <Typography variant="body1">{user.address?.street}, {user.address?.city}, {user.address?.zip}</Typography>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="subtitle2" color="text.secondary">Geo Coordinates</Typography>
-                <Chip label={`${user.latitude}, ${user.longitude}`} />
+                <Chip label={`${user.address?.geo?.lat}, ${user.address?.geo?.lng}`} />
               </Grid>
             </Grid>
           </Stack>
